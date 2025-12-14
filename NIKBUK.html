@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Self-Published Books</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- PWA manifest (optional for later; keep, even if icons not ready yet) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#ff6b35">
+
+  <style>
+    body {font-family: Arial, sans-serif; margin: 0; background: #f5f5f5;}
+    .container {max-width: 500px; margin: 0 auto; padding: 16px;}
+    h1 {text-align: center; color: #333333; margin-top: 8px;}
+    .subtitle {text-align: center; color: #777777; font-size: 14px; margin-bottom: 16px;}
+    .card {
+      background: #ffffff; padding: 16px; border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 16px;
+    }
+    .book-cover {width: 100%; max-height: 220px; object-fit: cover; border-radius: 8px;}
+    .book-title {font-size: 20px; font-weight: bold; margin: 10px 0 4px;}
+    .book-sub {color: #555555; font-size: 14px; margin-bottom: 6px;}
+    .book-meta {color: #777777; font-size: 13px; margin-bottom: 8px;}
+    .price {font-size: 22px; color: #28a745; font-weight: bold; margin-bottom: 10px;}
+    .sample-link {
+      display: inline-block; margin-bottom: 10px; font-size: 14px;
+      color: #007bff; text-decoration: none;
+    }
+    .sample-link:hover {text-decoration: underline;}
+    label {font-size: 14px; margin-top: 10px; display: block;}
+    input, textarea, select {
+      width: 100%; padding: 11px; margin-top: 4px; border: 1px solid #dddddd;
+      border-radius: 6px; box-sizing: border-box; font-size: 14px;
+    }
+    button {
+      background: #ff6b35; color: #ffffff; border: none;
+      padding: 13px 18px; font-size: 16px; border-radius: 30px;
+      cursor: pointer; width: 100%; margin-top: 14px;
+    }
+    button:hover {background: #e55a2b;}
+    #paymentSection, #successMessage, #installBtn {display: none;}
+    #successMessage {
+      text-align: center; background: #d4edda; color: #155724;
+      padding: 14px; border-radius: 10px;
+    }
+    .note {font-size: 11px; color: #777777; margin-top: 6px;}
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>My Self-Published Books</h1>
+  <div class="subtitle">Enter details → Pay → Book prints & ships automatically</div>
+
+  <!-- BOOK DISPLAY -->
+  <div class="card" id="bookDisplay">
+    <!-- TODO: replace src with your real Book 1 cover URL or file name -->
+    <img id="bookCover" class="book-cover"
+         src="cover-book1.jpg" alt="Book cover">
+    <div class="book-title" id="bookTitle">Book 1: My Life Story</div>
+    <div class="book-sub" id="bookSynopsis">
+      Complete autobiography with personal struggles, turning points and key life lessons.
+    </div>
+    <div class="book-meta" id="bookMeta">
+      Pages: 250 • Format: Paperback • Language: English
+    </div>
+    <div class="price" id="bookPrice">₹299</div>
+    <!-- TODO: replace href with your real sample PDF for Book 1 -->
+    <a href="sample-book1.pdf" id="sampleLink" class="sample-link" target="_blank">
+      Read free sample (PDF)
+    </a>
+  </div>
+
+  <!-- ORDER FORM -->
+  <div class="card" id="orderForm">
+    <label for="bookSelect">Select Book:</label>
+    <select id="bookSelect" onchange="updateBookInfo()">
+      <option value="book1">Book 1: My Life Story – ₹299</option>
+      <option value="book2">Book 2: Road to Self-Publishing – ₹349</option>
+      <option value="book3">Book 3: Science & Skepticism – ₹399</option>
+    </select>
+
+    <label for="name">Full Name</label>
+    <input type="text" id="name" placeholder="Full Name" required>
+
+    <label for="email">Email Address</label>
+    <input type="email" id="email" placeholder="Email Address" required>
+
+    <label for="phone">Phone Number</label>
+    <input type="tel" id="phone" placeholder="Phone Number" required>
+
+    <label for="address">Full Shipping Address (incl. pincode)</label>
+    <textarea id="address" rows="4" placeholder="Full Shipping Address" required></textarea>
+
+    <button type="button" onclick="showPayment()">Proceed to Payment</button>
+    <!-- PWA install button (becomes visible when browser allows install) -->
+    <button id="installBtn" type="button">Install this app on your phone</button>
+    <div class="note">
+      Payments are processed securely by Razorpay. You will receive order confirmation by email.
+    </div>
+  </div>
+
+  <!-- PAYMENT SECTION -->
+  <div class="card" id="paymentSection">
+    <h3>Review Your Order</h3>
+    <div id="orderSummary" style="font-size: 14px; margin-bottom: 10px;"></div>
+    <button type="button" onclick="initiatePayment()">Pay securely via Razorpay</button>
+    <div class="note">UPI • Cards • Netbanking • Wallets</div>
+  </div>
+
+  <!-- SUCCESS MESSAGE -->
+  <div id="successMessage">
+    <strong>Payment successful!</strong><br>
+    Your book will be printed and shipped in 3–5 working days.<br>
+    Confirmation sent to: <span id="confirmEmail"></span>
+  </div>
+</div>
+
+<!-- Razorpay Checkout -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  // TODO: put your Razorpay test key here, then live key when ready.
+  const razorpayKey = 'rzp_test_YOUR_KEY_HERE';
+
+  // All book data here; edit titles, prices, covers, and sample PDFs.
+  const books = {
+    book1: {
+      title: 'Book 1: My Life Story',
+      synopsis: 'Complete autobiography with personal struggles, turning points and key life lessons.',
+      meta: 'Pages: 250 • Format: Paperback • Language: English',
+      priceDisplay: '₹299',
+      amountPaise: 29900,
+      cover: 'cover-book1.jpg',          // file or URL
+      sample: 'sample-book1.pdf'         // file or URL
+    },
+    book2: {
+      title: 'Book 2: Road to Self-Publishing',
+      synopsis: 'Practical guide for Indian authors on planning, writing, formatting and selling self-published books.',
+      meta: 'Pages: 180 • Format: Paperback • Language: English',
+      priceDisplay: '₹349',
+      amountPaise: 34900,
+      cover: 'cover-book2.jpg',
+      sample: 'sample-book2.pdf'
+    },
+    book3: {
+      title: 'Book 3: Science & Skepticism',
+      synopsis: 'Introduction to scientific thinking, rational inquiry and debunking common myths and superstitions.',
+      meta: 'Pages: 220 • Format: Paperback • Language: English',
+      priceDisplay: '₹399',
+      amountPaise: 39900,
+      cover: 'cover-book3.jpg',
+      sample: 'sample-book3.pdf'
+    }
+  };
+
+  let orderData = {};
+
+  function updateBookInfo() {
+    const key = document.getElementById('bookSelect').value;
+    const b = books[key];
+    document.getElementById('bookTitle').textContent = b.title;
+    document.getElementById('bookSynopsis').textContent = b.synopsis;
+    document.getElementById('bookMeta').textContent = b.meta;
+    document.getElementById('bookPrice').textContent = b.priceDisplay;
+    document.getElementById('bookCover').src = b.cover;
+    document.getElementById('sampleLink').href = b.sample;
+  }
+
+  function showPayment() {
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const address = document.getElementById('address').value.trim();
+    const bookKey = document.getElementById('bookSelect').value;
+    const b = books[bookKey];
+
+    if (!name || !email || !phone || !address) {
+      alert('Please fill all details.');
+      return;
+    }
+
+    orderData = {
+      name, email, phone, address,
+      bookTitle: b.title,
+      amountPaise: b.amountPaise,
+      amountDisplay: b.priceDisplay
+    };
+
+    document.getElementById('orderForm').style.display = 'none';
+    document.getElementById('paymentSection').style.display = 'block';
+
+    document.getElementById('orderSummary').innerHTML =
+      '<strong>' + orderData.bookTitle + '</strong><br>' +
+      'Name: ' + orderData.name + '<br>' +
+      'Email: ' + orderData.email + '<br>' +
+      'Phone: ' + orderData.phone + '<br>' +
+      'Address: ' + orderData.address + '<br>' +
+      'Total: ' + orderData.amountDisplay;
+  }
+
+  function initiatePayment() {
+    const options = {
+      key: razorpayKey,
+      amount: orderData.amountPaise,
+      currency: 'INR',
+      name: 'My Self-Published Books',
+      description: orderData.bookTitle,
+      handler: function (response) {
+        showSuccess(response);
+      },
+      prefill: {
+        name: orderData.name,
+        email: orderData.email,
+        contact: orderData.phone
+      },
+      theme: { color: '#ff6b35' }
+    };
+    const rzp = new Razorpay(options);
+    rzp.on('payment.failed', function (res) {
+      alert('Payment failed: ' + res.error.description);
+      document.getElementById('paymentSection').style.display = 'none';
+      document.getElementById('orderForm').style.display = 'block';
+    });
+    rzp.open();
+  }
+
+  function showSuccess(response) {
+    document.getElementById('paymentSection').style.display = 'none';
+    document.getElementById('successMessage').style.display = 'block';
+    document.getElementById('confirmEmail').textContent = orderData.email;
+
+    // Simple console log you can inspect in desktop DevTools later.
+    console.log('ORDER DATA (save manually from Razorpay dashboard):', {
+      orderData,
+      razorpay_payment_id: response.razorpay_payment_id,
+      razorpay_order_id: response.razorpay_order_id,
+      razorpay_signature: response.razorpay_signature,
+      time: new Date().toISOString()
+    });
+  }
+
+  // PWA install button handling (safe even if you don’t yet ship a service worker)
+  let deferredPrompt;
+  const installBtn = document.getElementById('installBtn');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'block';
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) {
+      alert('If you do not see an install option, open this page in Chrome.');
+      return;
+    }
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+  });
+
+  // Initial book display
+  updateBookInfo();
+</script>
+</body>
+</html>

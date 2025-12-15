@@ -1,255 +1,343 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>My Self-Published Books</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="manifest" href="/nikbuk/manifest.webmanifest">
-  <meta name="theme-color" content="#ff6b35">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <style>
-    body {font-family: Arial, sans-serif; margin: 0; background: #f5f5f5;}
-    .container {max-width: 500px; margin: 0 auto; padding: 16px;}
-    h1 {text-align: center; color: #333333; margin-top: 8px;}
-    .subtitle {text-align: center; color: #777777; font-size: 14px; margin-bottom: 16px;}
+    :root {
+      /* Light theme (default) */
+      --bg: #f5f5f5;
+      --card-bg: #ffffff;
+      --text-main: #333333;
+      --text-muted: #777777;
+      --accent: #ffb703;        /* yellow buttons and accents */
+      --accent-dark: #f48c06;
+      --price: #008000;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text-main);
+    }
+
+    /* Dark theme */
+    body.theme-dark {
+      --bg: #1f1f1f;
+      --card-bg: #2b2b2b;
+      --text-main: #f8f5e7;
+      --text-muted: #c2a96b;
+      --accent: #ffb703;
+      --accent-dark: #f48c06;
+      --price: #9be060;
+    }
+
+    /* Warm yellow theme */
+    body.theme-warm {
+      --bg: #fff9db;
+      --card-bg: #fff3b0;
+      --text-main: #3b2800;
+      --text-muted: #7a5a00;
+      --accent: #ffb703;
+      --accent-dark: #f48c06;
+      --price: #008000;
+    }
+
+    .page {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px 16px 40px;
+      position: relative;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 32px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.04);
+      backdrop-filter: blur(6px);
+      z-index: 10;
+    }
+
+    .toolbar button {
+      padding: 5px 10px;
+      font-size: 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      background: #ffffff;
+      color: #333333;
+      cursor: pointer;
+    }
+
+    .toolbar button:focus {
+      outline: none;
+    }
+
     .card {
-      background: #ffffff; padding: 16px; border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 16px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      padding: 16px;
+      margin-bottom: 16px;
     }
-    .book-cover {width: 100%; max-height: 220px; object-fit: cover; border-radius: 8px;}
-    .book-title {font-size: 20px; font-weight: bold; margin: 10px 0 4px;}
-    .book-sub {color: #555555; font-size: 14px; margin-bottom: 6px;}
-    .book-meta {color: #777777; font-size: 13px; margin-bottom: 8px;}
-    .price {font-size: 22px; color: #28a745; font-weight: bold; margin-bottom: 10px;}
-    .sample-link {
-      display: inline-block; margin-bottom: 10px; font-size: 14px;
-      color: #007bff; text-decoration: none;
+
+    .book-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
     }
-    .sample-link:hover {text-decoration: underline;}
-    label {font-size: 14px; margin-top: 10px; display: block;}
-    input, textarea, select {
-      width: 100%; padding: 11px; margin-top: 4px; border: 1px solid #dddddd;
-      border-radius: 6px; box-sizing: border-box; font-size: 14px;
+
+    .book-cover {
+      width: 64px;
+      height: 90px;
+      background: #ddd;
+      border-radius: 8px;
+      margin-right: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      color:#555;
     }
-    button {
-      background: #ff6b35; color: #ffffff; border: none;
-      padding: 13px 18px; font-size: 16px; border-radius: 30px;
-      cursor: pointer; width: 100%; margin-top: 14px;
+
+    .book-title {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 4px;
     }
-    button:hover {background: #e55a2b;}
-    #paymentSection, #successMessage, #installBtn {display: none;}
-    #successMessage {
-      text-align: center; background: #d4edda; color: #155724;
-      padding: 14px; border-radius: 10px;
+
+    .book-desc {
+      font-size: 13px;
+      color: var(--text-main);
+      margin-bottom: 8px;
     }
-    .note {font-size: 11px; color: #777777; margin-top: 6px;}
+
+    .book-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .price {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--price);
+      margin-bottom: 8px;
+    }
+
+    .link-button {
+      font-size: 13px;
+      color: var(--accent-dark);
+      text-decoration: underline;
+      cursor: pointer;
+      border: none;
+      padding: 0;
+      background: none;
+    }
+
+    .console-placeholder {
+      margin-top: 32px;
+      border-top: 1px solid #ccc;
+      padding-top: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .note {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* Accent buttons inside main content */
+    .primary-btn {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 8px 14px;
+      border-radius: 20px;
+      border: none;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .primary-btn:hover {
+      background: var(--accent-dark);
+    }
   </style>
 </head>
 <body>
-<div class="container">
-  <h1>My Self-Published Books</h1>
-  <div class="subtitle">Enter details → Pay → Book prints & ships automatically</div>
-
-  <div class="card" id="bookDisplay">
-    <img id="bookCover" class="book-cover" src="cover-book1.jpg" alt="Book cover">
-    <div class="book-title" id="bookTitle">Book 1: My Life Story</div>
-    <div class="book-sub" id="bookSynopsis">
-      Complete autobiography with personal struggles, turning points and key life lessons.
-    </div>
-    <div class="book-meta" id="bookMeta">
-      Pages: 250 • Format: Paperback • Language: English
-    </div>
-    <div class="price" id="bookPrice">₹299</div>
-    <a href="sample-book1.pdf" id="sampleLink" class="sample-link" target="_blank">
-      Read free sample (PDF)
-    </a>
+  <div class="toolbar">
+    <button id="langToggle" type="button">മലയാളം</button>
+    <button id="themeToggle" type="button">Theme: Light</button>
   </div>
 
-  <div class="card" id="orderForm">
-    <label for="bookSelect">Select Book:</label>
-    <select id="bookSelect" onchange="updateBookInfo()">
-      <option value="book1">Book 1: My Life Story – ₹299</option>
-      <option value="book2">Book 2: Road to Self-Publishing – ₹349</option>
-      <option value="book3">Book 3: Science & Skepticism – ₹399</option>
-    </select>
+  <div class="page">
+    <h1 id="t_title">My Self-Published Books</h1>
+    <div class="subtitle" id="t_subtitle">
+      Enter details → Pay → Book prints & ships automatically
+    </div>
 
-    <label for="name">Full Name</label>
-    <input type="text" id="name" placeholder="Full Name" required>
+    <div class="card">
+      <div class="book-header">
+        <div class="book-cover" id="t_book1_cover">Book cover</div>
+        <div>
+          <div class="book-title" id="t_book1_title">Book 1: My Life Story</div>
+          <div class="book-desc" id="t_book1_desc">
+            Complete autobiography with personal struggles, turning points and key life lessons.
+          </div>
+          <div class="book-meta" id="t_book1_meta">
+            Pages: 250 · Format: Paperback · Language: English
+          </div>
+        </div>
+      </div>
 
-    <label for="email">Email Address</label>
-    <input type="email" id="email" placeholder="Email Address" required>
+      <div class="price" id="t_book1_price">₹299</div>
 
-    <label for="phone">Phone Number</label>
-    <input type="tel" id="phone" placeholder="Phone Number" required>
+      <button class="primary-btn" id="t_buy_btn">
+        Buy now (coming soon)
+      </button>
 
-    <label for="address">Full Shipping Address (incl. pincode)</label>
-    <textarea id="address" rows="4" placeholder="Full Shipping Address" required></textarea>
+      <div>
+        <button class="link-button" id="t_sample_link">
+          Read free sample (PDF)
+        </button>
+      </div>
+    </div>
 
-    <button type="button" onclick="showPayment()">Proceed to Payment</button>
-    <button id="installBtn" type="button">Install this app on your phone</button>
+    <div class="console-placeholder">
+      Console preview area only for development.  
+      Actual buyers will not see this section.
+    </div>
     <div class="note">
-      Payments are processed securely by Razorpay. You will receive order confirmation by email.
+      You are viewing a local test file. Some web app features like Service Worker will not work from <code>file://</code> URLs.
     </div>
   </div>
 
-  <div class="card" id="paymentSection">
-    <h3>Review Your Order</h3>
-    <div id="orderSummary" style="font-size: 14px; margin-bottom: 10px;"></div>
-    <button type="button" onclick="initiatePayment()">Pay securely via Razorpay</button>
-    <div class="note">UPI • Cards • Netbanking • Wallets</div>
-  </div>
-
-  <div id="successMessage">
-    <strong>Payment successful!</strong><br>
-    Your book will be printed and shipped in 3–5 working days.<br>
-    Confirmation sent to: <span id="confirmEmail"></span>
-  </div>
-</div>
-
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script>
-  const razorpayKey = 'rzp_test_YOUR_KEY_HERE';
-
-  const books = {
-    book1: {
-      title: 'Book 1: My Life Story',
-      synopsis: 'Complete autobiography with personal struggles, turning points and key life lessons.',
-      meta: 'Pages: 250 • Format: Paperback • Language: English',
-      priceDisplay: '₹299',
-      amountPaise: 29900,
-      cover: 'cover-book1.jpg',
-      sample: 'sample-book1.pdf'
-    },
-    book2: {
-      title: 'Book 2: Road to Self-Publishing',
-      synopsis: 'Practical guide for Indian authors on planning, writing, formatting and selling self-published books.',
-      meta: 'Pages: 180 • Format: Paperback • Language: English',
-      priceDisplay: '₹349',
-      amountPaise: 34900,
-      cover: 'cover-book2.jpg',
-      sample: 'sample-book2.pdf'
-    },
-    book3: {
-      title: 'Book 3: Science & Skepticism',
-      synopsis: 'Introduction to scientific thinking, rational inquiry and debunking common myths and superstitions.',
-      meta: 'Pages: 220 • Format: Paperback • Language: English',
-      priceDisplay: '₹399',
-      amountPaise: 39900,
-      cover: 'cover-book3.jpg',
-      sample: 'sample-book3.pdf'
-    }
-  };
-
-  let orderData = {};
-
-  function updateBookInfo() {
-    const key = document.getElementById('bookSelect').value;
-    const b = books[key];
-    document.getElementById('bookTitle').textContent = b.title;
-    document.getElementById('bookSynopsis').textContent = b.synopsis;
-    document.getElementById('bookMeta').textContent = b.meta;
-    document.getElementById('bookPrice').textContent = b.priceDisplay;
-    document.getElementById('bookCover').src = b.cover;
-    document.getElementById('sampleLink').href = b.sample;
-  }
-
-  function showPayment() {
-    const name = document.getElementById('name').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const address = document.getElementById('address').value.trim();
-    const bookKey = document.getElementById('bookSelect').value;
-    const b = books[bookKey];
-
-    if (!name || !email || !phone || !address) {
-      alert('Please fill all details.');
-      return;
-    }
-
-    orderData = {
-      name, email, phone, address,
-      bookTitle: b.title,
-      amountPaise: b.amountPaise,
-      amountDisplay: b.priceDisplay
+  <script>
+    /* ---------- Translations ---------- */
+    const translations = {
+      en: {
+        title: 'My Self-Published Books',
+        subtitle: 'Enter details → Pay → Book prints & ships automatically',
+        book1_cover: 'Book cover',
+        book1_title: 'Book 1: My Life Story',
+        book1_desc: 'Complete autobiography with personal struggles, turning points and key life lessons.',
+        book1_meta: 'Pages: 250 · Format: Paperback · Language: English',
+        book1_price: '₹299',
+        buy_btn: 'Buy now (coming soon)',
+        sample_link: 'Read free sample (PDF)',
+        console_note: 'Console preview area only for development.',
+        file_note: 'You are viewing a local test file. Some web app features like Service Worker will not work from file:// URLs.',
+        lang_button_en: 'മലയാളം',
+        lang_button_ml: 'English'
+      },
+      ml: {
+        title: 'എന്റെ സ്വയം പ്രസിദ്ധീകരിച്ച പുസ്തകങ്ങൾ',
+        subtitle: 'വിവരങ്ങൾ നൽകുക → പണമടയ്ക്കുക → പുസ്തകം അച്ചടിച്ച് അയക്കും',
+        book1_cover: 'പുസ്തക കവർ',
+        book1_title: 'പുസ്തകം 1: എന്റെ ജീവിതകഥ',
+        book1_desc: 'വ്യക്തിഗത പോരാട്ടങ്ങളും വഴിത്തിരിവുകളും ജീവിതപാഠങ്ങളും ഉൾക്കുന്ന പൂർണ്ണ ആത്മകഥ.',
+        book1_meta: 'പേജുകൾ: 250 · ഫോർമാറ്റ്: പേപ്പർബാക്ക് · ഭാഷ: ഇംഗ്ലീഷ്',
+        book1_price: '₹299',
+        buy_btn: 'വാങ്ങൽ ഉടൻ ലഭ്യമാകും',
+        sample_link: 'സൗജന്യ സാമ്പിൾ വായിക്കുക (PDF)',
+        console_note: 'ഡെവലപ്പ്മെന്റിനുള്ള കോൺസോൾ പ്രിവ്യൂ ഭാഗം മാത്രം.',
+        file_note: 'ഇത് ഒരു ലോക്കൽ ടെസ്റ്റ് ഫയലാണ്. file:// URL-ൽ നിന്ന് ചില വെബ് ആപ്പ് ഫീച്ചറുകൾ പ്രവർത്തിക്കില്ല.',
+        lang_button_en: 'മലയാളം',
+        lang_button_ml: 'English'
+      }
     };
 
-    document.getElementById('orderForm').style.display = 'none';
-    document.getElementById('paymentSection').style.display = 'block';
+    let currentLang = localStorage.getItem('lang') || 'en';
 
-    document.getElementById('orderSummary').innerHTML =
-      '<strong>' + orderData.bookTitle + '</strong><br>' +
-      'Name: ' + orderData.name + '<br>' +
-      'Email: ' + orderData.email + '<br>' +
-      'Phone: ' + orderData.phone + '<br>' +
-      'Address: ' + orderData.address + '<br>' +
-      'Total: ' + orderData.amountDisplay;
-  }
+    function applyTranslations() {
+      const t = translations[currentLang];
 
-  function initiatePayment() {
-    const options = {
-      key: razorpayKey,
-      amount: orderData.amountPaise,
-      currency: 'INR',
-      name: 'My Self-Published Books',
-      description: orderData.bookTitle,
-      handler: function (response) {
-        showSuccess(response);
-      },
-      prefill: {
-        name: orderData.name,
-        email: orderData.email,
-        contact: orderData.phone
-      },
-      theme: { color: '#ff6b35' }
-    };
-    const rzp = new Razorpay(options);
-    rzp.on('payment.failed', function (res) {
-      alert('Payment failed: ' + res.error.description);
-      document.getElementById('paymentSection').style.display = 'none';
-      document.getElementById('orderForm').style.display = 'block';
-    });
-    rzp.open();
-  }
+      document.getElementById('t_title').textContent = t.title;
+      document.getElementById('t_subtitle').textContent = t.subtitle;
+      document.getElementById('t_book1_cover').textContent = t.book1_cover;
+      document.getElementById('t_book1_title').textContent = t.book1_title;
+      document.getElementById('t_book1_desc').textContent = t.book1_desc;
+      document.getElementById('t_book1_meta').textContent = t.book1_meta;
+      document.getElementById('t_book1_price').textContent = t.book1_price;
+      document.getElementById('t_buy_btn').textContent = t.buy_btn;
+      document.getElementById('t_sample_link').textContent = t.sample_link;
+      document.querySelector('.console-placeholder').textContent =
+        t.console_note;
+      document.querySelector('.note').innerHTML =
+        t.file_note.replace('file://', '<code>file://</code>');
 
-  function showSuccess(response) {
-    document.getElementById('paymentSection').style.display = 'none';
-    document.getElementById('successMessage').style.display = 'block';
-    document.getElementById('confirmEmail').textContent = orderData.email;
-    console.log('ORDER DATA:', {
-      orderData,
-      razorpay_payment_id: response.razorpay_payment_id,
-      razorpay_order_id: response.razorpay_order_id,
-      razorpay_signature: response.razorpay_signature,
-      time: new Date().toISOString()
-    });
-  }
+      const langToggle = document.getElementById('langToggle');
+      langToggle.textContent =
+        currentLang === 'en'
+          ? translations.en.lang_button_en
+          : translations.ml.lang_button_ml;
 
-  // Service worker registration (needed for installability).
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/nikbuk/sw.js').catch(console.error);
-  }
-
-  // Custom PWA install button.
-  let deferredPrompt;
-  const installBtn = document.getElementById('installBtn');
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.style.display = 'block';
-  });
-
-  installBtn.addEventListener('click', async () => {
-    if (!deferredPrompt) {
-      alert('If you do not see an install option, open this page in Chrome.');
-      return;
+      localStorage.setItem('lang', currentLang);
     }
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    installBtn.style.display = 'none';
-  });
 
-  updateBookInfo();
-</script>
+    const langToggleBtn = document.getElementById('langToggle');
+    langToggleBtn.addEventListener('click', () => {
+      currentLang = currentLang === 'en' ? 'ml' : 'en';
+      applyTranslations();
+    });
+
+    /* ---------- Themes ---------- */
+    const themeToggle = document.getElementById('themeToggle');
+    const themes = ['light', 'dark', 'warm'];
+    let currentTheme = localStorage.getItem('theme') || 'light';
+
+    function applyTheme(theme) {
+      document.body.classList.remove('theme-dark', 'theme-warm');
+
+      if (theme === 'dark') {
+        document.body.classList.add('theme-dark');
+      } else if (theme === 'warm') {
+        document.body.classList.add('theme-warm');
+      }
+
+      themeToggle.textContent =
+        theme === 'light'
+          ? 'Theme: Light'
+          : theme === 'dark'
+          ? 'Theme: Dark'
+          : 'Theme: Warm';
+
+      localStorage.setItem('theme', theme);
+    }
+
+    themeToggle.addEventListener('click', () => {
+      const index = themes.indexOf(currentTheme);
+      const next = themes[(index + 1) % themes.length];
+      currentTheme = next;
+      applyTheme(currentTheme);
+    });
+
+    /* ---------- Initial load ---------- */
+    applyTheme(currentTheme);
+    applyTranslations();
+  </script>
 </body>
 </html>

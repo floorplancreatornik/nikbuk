@@ -4,11 +4,8 @@
   <meta charset="UTF-8">
   <title>My Self-Published Books</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- PWA manifest (optional for later; keep, even if icons not ready yet) -->
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#ff6b35">
-
   <style>
     body {font-family: Arial, sans-serif; margin: 0; background: #f5f5f5;}
     .container {max-width: 500px; margin: 0 auto; padding: 16px;}
@@ -52,11 +49,8 @@
   <h1>My Self-Published Books</h1>
   <div class="subtitle">Enter details → Pay → Book prints & ships automatically</div>
 
-  <!-- BOOK DISPLAY -->
   <div class="card" id="bookDisplay">
-    <!-- TODO: replace src with your real Book 1 cover URL or file name -->
-    <img id="bookCover" class="book-cover"
-         src="cover-book1.jpg" alt="Book cover">
+    <img id="bookCover" class="book-cover" src="cover-book1.jpg" alt="Book cover">
     <div class="book-title" id="bookTitle">Book 1: My Life Story</div>
     <div class="book-sub" id="bookSynopsis">
       Complete autobiography with personal struggles, turning points and key life lessons.
@@ -65,13 +59,11 @@
       Pages: 250 • Format: Paperback • Language: English
     </div>
     <div class="price" id="bookPrice">₹299</div>
-    <!-- TODO: replace href with your real sample PDF for Book 1 -->
     <a href="sample-book1.pdf" id="sampleLink" class="sample-link" target="_blank">
       Read free sample (PDF)
     </a>
   </div>
 
-  <!-- ORDER FORM -->
   <div class="card" id="orderForm">
     <label for="bookSelect">Select Book:</label>
     <select id="bookSelect" onchange="updateBookInfo()">
@@ -93,14 +85,12 @@
     <textarea id="address" rows="4" placeholder="Full Shipping Address" required></textarea>
 
     <button type="button" onclick="showPayment()">Proceed to Payment</button>
-    <!-- PWA install button (becomes visible when browser allows install) -->
     <button id="installBtn" type="button">Install this app on your phone</button>
     <div class="note">
       Payments are processed securely by Razorpay. You will receive order confirmation by email.
     </div>
   </div>
 
-  <!-- PAYMENT SECTION -->
   <div class="card" id="paymentSection">
     <h3>Review Your Order</h3>
     <div id="orderSummary" style="font-size: 14px; margin-bottom: 10px;"></div>
@@ -108,7 +98,6 @@
     <div class="note">UPI • Cards • Netbanking • Wallets</div>
   </div>
 
-  <!-- SUCCESS MESSAGE -->
   <div id="successMessage">
     <strong>Payment successful!</strong><br>
     Your book will be printed and shipped in 3–5 working days.<br>
@@ -116,13 +105,10 @@
   </div>
 </div>
 
-<!-- Razorpay Checkout -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-  // TODO: put your Razorpay test key here, then live key when ready.
   const razorpayKey = 'rzp_test_YOUR_KEY_HERE';
 
-  // All book data here; edit titles, prices, covers, and sample PDFs.
   const books = {
     book1: {
       title: 'Book 1: My Life Story',
@@ -130,8 +116,8 @@
       meta: 'Pages: 250 • Format: Paperback • Language: English',
       priceDisplay: '₹299',
       amountPaise: 29900,
-      cover: 'cover-book1.jpg',          // file or URL
-      sample: 'sample-book1.pdf'         // file or URL
+      cover: 'cover-book1.jpg',
+      sample: 'sample-book1.pdf'
     },
     book2: {
       title: 'Book 2: Road to Self-Publishing',
@@ -228,9 +214,7 @@
     document.getElementById('paymentSection').style.display = 'none';
     document.getElementById('successMessage').style.display = 'block';
     document.getElementById('confirmEmail').textContent = orderData.email;
-
-    // Simple console log you can inspect in desktop DevTools later.
-    console.log('ORDER DATA (save manually from Razorpay dashboard):', {
+    console.log('ORDER DATA:', {
       orderData,
       razorpay_payment_id: response.razorpay_payment_id,
       razorpay_order_id: response.razorpay_order_id,
@@ -239,7 +223,12 @@
     });
   }
 
-  // PWA install button handling (safe even if you don’t yet ship a service worker)
+  // Service worker registration (needed for installability).
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(console.error);
+  }
+
+  // Custom PWA install button.
   let deferredPrompt;
   const installBtn = document.getElementById('installBtn');
 
@@ -260,7 +249,6 @@
     installBtn.style.display = 'none';
   });
 
-  // Initial book display
   updateBookInfo();
 </script>
 </body>

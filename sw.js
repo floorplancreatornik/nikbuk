@@ -6,7 +6,7 @@ self.addEventListener('activate', (event) => {
   clients.claim();
 });
 
-// Minimal fetch handler; everything goes to network for now.
+// Minimal fetch handler; keeps requests online for now.
 self.addEventListener('fetch', (event) => {
   event.respondWith(fetch(event.request));
 });
